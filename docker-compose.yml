@@ -1,0 +1,44 @@
+version: "3.3"
+
+services:
+  web:
+    build: .
+    command: >
+      bash -c "(/code/cron.sh &)
+      && python3 manage.py runserver 0.0.0.0:8000"
+
+    volumes:
+      - .:/code
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+
+  db:
+    image: timescale/timescaledb:latest-pg14
+    volumes:
+      #- /var/lib/docker/volumes/postgres_data/_data/:/var/lib/postgresql/data/
+      #- /var/lib/docker/volumes/postgres_data2/_data:/var/lib/postgresql/data/
+      - /var/lib/docker/volumes/postgres_data3/_data:/var/lib/postgresql/data/
+      - ./my_postgres.conf:/etc/postgresql.conf
+    ports:
+      - 5432:5432
+    environment:
+      - "POSTGRES_HOST_AUTH_METHOD=trust"
+
+
+  metabase-app:
+    image: metabase/metabase
+    restart: always
+    ports:
+      - 3000:3000
+    volumes:
+      # declare your mount volume /host/dir:/container/dir
+      #- /var/lib/docker/volumes/metabase/_data:/metabase-data
+      #- /var/lib/docker/volumes/metabase2/_data:/metabase-data
+      - /var/lib/docker/volumes/metabase3/_data:/metabase-data
+
+    depends_on:
+      - db
+#    links:
+#      - db

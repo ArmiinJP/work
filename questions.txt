@@ -1,0 +1,33 @@
+پیدا کردن ماکسیم مقدار یک ستون در جنگو
+https://stackoverflow.com/questions/844591/how-to-do-select-max-in-django
+ترکیب ماکسیمم و فیلتر
+https://stackoverflow.com/questions/15675672/get-the-latest-record-with-filter-in-django
+فانکشن های مهم مثل نمونه‌ی بعدی و extract و اینا
+https://docs.djangoproject.com/en/1.10/ref/models/database-functions/
+بخش زمان ، تکه کردن زمان براساس روز و ماه و اینا
+https://docs.djangoproject.com/en/1.10/ref/models/database-functions/#trunc
+بزرگتر مساوی و کوچیکتر مساوی در جنگو
+https://stackoverflow.com/questions/10040143/and-dont-work-with-filter-in-django
+مشکل ارور امکان null نبودن و نبود مقدار دیفالت 
+https://stackoverflow.com/questions/57851262/django-the-database-needs-something-to-populate-existing-row
+
+مشکل خطای django.db.utils.OperationalError: connection to server at "db" (172.18.0.2), port 5432 failed: FATAL: the database system is starting up
+https://stackoverflow.com/questions/70605770/failed-to-connect-with-postgres-container-in-django
+در shell وقتی timezone.now را میزنی همیشه بر اساس UTC میده مشکل چیه؟
+https://stackoverflow.com/questions/27642356/django-timezone-settings-change-does-not-affect-model
+بحث کانکت کردن ستونها با هم در جنگو
+https://docs.djangoproject.com/en/1.8/ref/models/database-functions/#:~:text=Concat&text=Accepts%20a%20list%20of%20at%20least%20two%20text%20fields%20or,should%20be%20a%20TextField()%20.
+https://stackoverflow.com/questions/50682544/how-to-concatenate-two-model-fields-in-a-django-queryset
+ارور ProgrammingError: relation "django_session" does not exist مث که مال زمانی هست که شما هنوز migrate نکردی و میخواد کنسول admin را ببینی این خطا را میده.
+https://stackoverflow.com/questions/50346326/programmingerror-relation-django-session-does-not-exist
+خطای but no declaration was found in the volumes section وقتی که volume را در docker-compose تعریف کردی.
+https://stackoverflow.com/questions/71354458/timescaledb-get-retention-policy-and-chunk-time-interval-for-a-table
+
+دیدن retiontion_policy و چانک تایمی که تنظیم کردی
+https://stackoverflow.com/questions/71354458/timescaledb-get-retention-policy-and-chunk-time-interval-for-a-table
+
+
+آموزش کوئری ست جنگو
+https://riptutorial.com/django/example/12665/get-first-and-last-record-from-queryset
+بحث دیت تایم و string
+https://www.programiz.com/python-programming/datetime/strftime

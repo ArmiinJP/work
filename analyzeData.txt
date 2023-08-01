@@ -1,0 +1,12 @@
+متمایز dest_wallet_id تعداد 330585
+متمایز transaction_type تعداد 402
+متمایز transaction_type_chain تعداد 23367
+متمایز wallet_nickname تعداد 109033
+متمایز transaction_cost تعداد 138638
+متمایز transaction_value تعداد 172305
+متمایز bank_id تعداد 8469
+متمایز transaction_gateway_id تعداد 57738
+
+
+
+custom field
