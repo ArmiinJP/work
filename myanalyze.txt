@@ -1,0 +1,364 @@
+select min(dest_wallet_id), max(dest_wallet_id) from data_dataset
+
+
+(select dest_wallet_id, count(dest_wallet_id) tedad from data_dataset group by dest_wallet_id order by tedad desc 
+از هر dest_wallet_id چه تعداد نمونه‌ی مشابه داریم.
+
+select count(*) from (select dest_wallet_id, count(dest_wallet_id) tedad from data_dataset group by dest_wallet_id order by tedad desc ) as c 
+330,585 مقدار dest_wallet_id متمایز داریم
+
+
+
+ابتدا بررسی wallet_nickname: 
+از جهت null بودن و نبودن
+select count(*), 'wallet_nickname is null' from data_dataset where wallet_nickname is null
+union
+select count(*), 'wallet_nickname is not null' from data_dataset where wallet_nickname is not null
+از جهت null نبودن:
+کلا 109033 تا wallet_nickname منحصر به فرد داریم.
+select count(*) from(select distinct wallet_nickname from data_dataset  where wallet_nickname is not null) as t
+که تعداد هر کدام از wallet_nickname ها
+select wallet_nickname, count(*) tedad from data_dataset where wallet_nickname is not null group by wallet_nickname order by tedad desc
+توزیع تعداد wallet_nickname ها، در واقع ما در مثال بالا فهمیدیم مثلا یک wallet_nickname خاص، پنج بار تکرار شده، حالا میخوایم ببینیم چند تا wallet nickname داریم که پنج بار تکرار شدند:
+select  count(*) ta_wallet_nickname, tedad bar_tekrar_shodan from (select wallet_nickname, count(*) tedad from data_dataset where wallet_nickname is not null group by wallet_nickname order by tedad) as t group by tedad
+تقریبا 91 درصد از wallet_nickname کمتر از 5 بار تکرار شدند و 66 درصد از wallet_nickname ها تنها یکبار تکرار شدند.
+select sum(ta_wallet_nickname)/(select count(*) from(select distinct wallet_nickname from data_dataset  where wallet_nickname is not null) as t) from(
+select  count(*) ta_wallet_nickname, tedad bar_tekrar_shodan from (select wallet_nickname, count(*) tedad from data_dataset where wallet_nickname is not null group by wallet_nickname order by tedad) as t group by tedad) as b
+where b.bar_tekrar_shodan < 5
+بیشترین wallet_nickname تکرار شده به همراه تعداد تکرار:
+select wallet_nickname, tedad from (select wallet_nickname, count(*) tedad from data_dataset 
+where wallet_nickname is not null
+group by wallet_nickname) as d natural join (select max(bar_tekrar_shodan) tedad from(select  count(*) ta_wallet_nickname, tedad bar_tekrar_shodan from (select wallet_nickname, count(*) tedad from data_dataset where wallet_nickname is not null group by wallet_nickname order by tedad) as t group by tedad) as b) as c
+
+ترکیب بیشترین wallet_nickname و dest_wallet_id ما را به جای خاصی نکشوند
+
+ترکیب wallet_nick_name هایی که کمتر از 5 بار تکرار شدند با dest_wallet_id ما را به دو dest_wallet_id میرساند، که تراکنش های بالایی را از خود ثبت کردند:
+
+select dest_wallet_id, count(*) tedad from data_dataset 
+where wallet_nickname in (select wallet_nickname from (select wallet_nickname, count(*) tedad from data_dataset where wallet_nickname is not null group by wallet_nickname order by tedad) as t where tedad < 5)
+group by dest_wallet_id
+order by tedad desc
+
+
+select dest_wallet_id, tedad from(
+select dest_wallet_id, count(*) tedad from data_dataset 
+where wallet_nickname in (select wallet_nickname from (select wallet_nickname, count(*) tedad from data_dataset where wallet_nickname is not null group by wallet_nickname order by tedad) as t where tedad < 5)
+group by dest_wallet_id
+order by tedad desc) as b
+where tedad >100
+
+
+
+خب
+select count(*), 'wallet_nickname is null and not null' from(
+select distinct dest_wallet_id from data_dataset where wallet_nickname is null
+intersect all
+select distinct dest_wallet_id from data_dataset where wallet_nickname is not null) as t
+union
+select count(*), 'wallet_nickname is null ' from(
+select distinct dest_wallet_id from data_dataset where wallet_nickname is null
+except all
+select distinct dest_wallet_id from data_dataset where wallet_nickname is not null) as t
+union
+select count(*), 'wallet_nickname is not null ' from(
+select distinct dest_wallet_id from data_dataset where wallet_nickname is not null
+except all
+select distinct dest_wallet_id from data_dataset where wallet_nickname is null) as t
+
+ما 330585 تا dest_wallet_id متمایز داریم.
+می‌توان dest_wallet_id را بر اساس wallet_nickname  به سه دسته تقسیم کرد.
+دسته‌ی اول: dest_wallet_id هایی که wallet_nickname های آنها null هست حدود 77.3
+دسته‌ی دوم: dest_wallet_id هایی که wallet_nickname های آنها  not null هست حدود 14.3
+دسته‌ی سوم: dest_wallet_id هایی که  wallet_nickname های آنها هم null هست هم not null حدود 8.4
+
+
+ما باید به یک فیچر و یک چیز مشخص و خوبی که تمایز خوبی ایجاد میکنه در اون عنصری که براساسش دسته بندی میکنیم برسیم
+بعدا ترکیبش کنیم با این wallet_nickname
+
+
+-- select * from (select dest_wallet_id, count(*) as t from data_dataset
+-- where wallet_nickname is null
+-- group by dest_wallet_id
+-- ) as tt where tt.t > 200
+
+
+
+-- select * from data_dataset
+-- --where dest_wallet_id=28136114
+-- where transaction_type_chain ~~ '_17s%'
+
+-- select sum(c.tedad)
+-- from (select dest_wallet_id, count(dest_wallet_id) tedad from data_dataset group by dest_wallet_id) as c
+
+
+--select c.tedad, count(c.tedad) from (select dest_wallet_id, count(dest_wallet_id) tedad from data_dataset group by dest_wallet_id order by tedad desc ) as c group by c.tedad order by count(c.tedad) desc
+select  from (select dest_wallet_id, count(dest_wallet_id) tedad from data_dataset group by dest_wallet_id order by tedad desc ) as c
+
+
+
+--select dest_wallet_id, count(dest_wallet_id) tedad from data_dataset group by dest_wallet_id order by tedad desc
+
+--select count(*) from data_dataset where dest_wallet_id=134744072
+
+
+
+transaction_value,  transaction_cost, count
+------------------------------------------------------------
+براساس dest_wallet_id 
+select count(*) * 100.0/(select count(*) from (select distinct dest_wallet_id from data_dataset) as b) from(select dest_wallet_id, sum(count) sum_count, sum(transaction_cost) sum_transaction_cost, sum(transaction_value) sum_transaction_value from data_dataset
+group by dest_wallet_id) as t
+where sum_count *  sum_transaction_cost < sum_transaction_value
+کلاسترینگ اول هم میشه در سه دسته هم در دو دسته تقسیم کرد:
+خب 3.74 درصد از dest_wallet_id های متمایز
+sum(transaction_cost) * sum(count) = sum(transaction_value)
+همچنین 24.31 درصد:
+sum(transaction_cost) * sum(count) < sum(transaction_value)
+و همچنین 71.95 درصد :
+sum(transaction_cost) * sum(count) > sum(transaction_value)
+------------------------------------------------------------
+select count(*) * 100.0/(select count(*) from (select distinct dest_wallet_id from data_dataset) as b) from(select dest_wallet_id, sum(count) sum_count, sum(transaction_cost) sum_transaction_cost, sum(transaction_value) sum_transaction_value from data_dataset
+group by dest_wallet_id) as t
+where sum_count * sum_transaction_value  > sum_transaction_cost
+کلاسترینگ دوم را هم میشود در سه دسته یا دو دسته تقسیم کرد که دو دسته بهتر هست:
+خب 45.61 درصد از dest_wallet_id های متمایز:
+sum_count * sum_transaction_value  <= sum_transaction_cost
+و 54.39 درصد از dest_wallet_id های متمایز :
+sum_count * sum_transaction_value  > sum_transaction_cost
+
+select count(*) * 100.0/(select count(*) from (select distinct dest_wallet_id from data_dataset) as b) from(select dest_wallet_id, sum(count*transaction_cost) sum_count_cost, sum(transaction_value) sum_value from data_dataset
+group by dest_wallet_id) as t
+where sum_count_cost = sum_value
+------------------------------------------------------------
+کلاسترینگ سوم هم میشود در سه دسته یا دو دسته تقسیم کرد:
+select count(*) * 100.0/(select count(*) from (select distinct dest_wallet_id from data_dataset) as b) from(select dest_wallet_id, sum(count*transaction_cost) sum_count_cost, sum(transaction_value) sum_value from data_dataset
+group by dest_wallet_id) as t
+where sum_count_cost <= sum_value
+خب 65.27 درصد از dest_wallet_id های متمایز:
+sum(count * transaction_cost) > sum(transaction_value)
+و 30.95 درصد از dest_wallet_id های متمایز:
+sum(count * transaction_cost) <= sum(transaction_value)
+و 3.78 درصد از dest_wallet_id های متمایز:
+sum(count * transaction_cost) = sum(transaction_value)
+------------------------------------------------------------
+کلاسترینگ چهارم هم می‌شود در دو دسته تقسیم کرد:
+select count(*) * 100.0/(select count(*) from (select distinct dest_wallet_id from data_dataset) as b) from(select dest_wallet_id, sum(count*transaction_value) sum_count_value, sum(transaction_cost) sum_cost from data_dataset
+group by dest_wallet_id) as t
+where sum_count_value <= sum_cost
+خب 50.67 درصد از dest_wallet_id های متمایز:
+sum(count  * transaction_value) > sum(transaction_cost)
+و 49.33 درصد از dest_wallet_id های متمایز:
+sum(count  * transaction_value) <= sum(transaction_cost)
+------------------------------------------------------------
+
+179 هزار تا transaction_cost = 0 دارند و value , count 
+
+
+
+چون تعداد کانت تعداد تراکنش های مشابه را نشان میدهد، تمامی تراکنش ها با transaction_value ,transaciont_cost , dest_wallet_id مشابه را با هم sum میکنیم. و تعداد کل تراکنش ها از رابطه‌ی زیر قابل محاسبه هست.
+select sum(sum) from (select dest_wallet_id, sum(count) , transaction_cost, transaction_value from data_dataset group by dest_wallet_id, transaction_cost, transaction_value)  as t
+پس از محاسبه ی کل تراکنش ها به سراغ کلاسترینگ میرویم
+روش اول:
+select sum(sum) * 100.0 / (select sum(sum) from (select dest_wallet_id, sum(count) , transaction_cost, transaction_value from data_dataset group by dest_wallet_id, transaction_cost, transaction_value)  as t)
+from (select dest_wallet_id, sum(count) , transaction_cost, transaction_value from data_dataset group by dest_wallet_id, transaction_cost, transaction_value order by dest_wallet_id, transaction_value, transaction_cost) as t where  transaction_value < transaction_cost
+یک روش دیگر کلاسترینگ با ۲ کلاستر میباشد که تعداد تراکنش هایی که شرایط زیر را دارند 47.7 درصد از تراکنش ها هستند
+transaction_value > transaction_cost 
+و 51.74 درصد از تراکنش ها به صورت زیر هست:
+transaction_value < transaction_cost
+-------------------
+روش دوم:
+select sum(sum) * 100.0 / (select sum(sum) from (select dest_wallet_id, sum(count) , transaction_cost, transaction_value from data_dataset group by dest_wallet_id, transaction_cost, transaction_value)  as t)
+from (select dest_wallet_id, sum(count) , transaction_cost, transaction_value from data_dataset group by dest_wallet_id, transaction_cost, transaction_value order by dest_wallet_id, transaction_value, transaction_cost) as t  where  t.transaction_value != 0 and transaction_cost != 0 
+اکنون 19.84 درصد از تراکنش ها فقط transaction_cost برابر با صفر دارند.
+و 28.3 درصد از تراکنش ها فقط transaction_value برابر با صفر دارند 
+در نهایت 51.86 درصد از تراکنش ها نه transaction_cost و نه transaction_value اشان صفر نمیباشد.
+بنابراین همین را میتوان یک کلاستر سه قسمت در نظر گرفت.
+
+
+از تراکنش هایی که نه cost و نه value آنها صفر نمیباشد: 53.87 درصد از آنها دارای transaction_value > transaction_cost و 45.19 درصد از آنها دارای transaction_cost > transaction_value هستند:
+select sum(sum) * 100.0 / (select sum(sum) from (select dest_wallet_id, sum(count) , transaction_cost, transaction_value from data_dataset group by dest_wallet_id, transaction_cost, transaction_value)  as t where transaction_value != 0 and transaction_cost != 0 )
+from (select dest_wallet_id, sum(count) , transaction_cost, transaction_value from data_dataset group by dest_wallet_id, transaction_cost, transaction_value order by dest_wallet_id, transaction_value, transaction_cost) as t  where  t.transaction_value != 0 and transaction_cost != 0 and transaction_cost < transaction_value
+
+
+
+1. sum(count)													per		dest_wallet_id, transaction_value, transaction_cost
+2. sum(sum(count)*transaction_value) , sum(sum(count)*transaction_cost)	per		dest_wallet_id, transaction_value, transaction_cost
+3. sum(sum(count)*transaction_value/sum(sum(count)*transaction_cost)	per		dest_wallet_id, transaction_value, transaction_cost
+
+روش اول: به چهار دسته تقسیم میکنیم: (براساس نسبت مجموع count*transaction_cost/count*transaction_value)
+1. اول dest_wallet_id هایی که مجموع transaction_cost آنها برابر با صفر است.
+2. دوم dest_wallet_id که نسبت گفته شده در آنها کمتر از 0.01 است.
+3. سوم dest_wallet_id که نسبت گفته شده در آنها بین 0.01 و 1 است.
+۴. چهارم dest_wallet_id که نسبت گفته شده در آنها بیشتر از 1 است.
+select count(dest_wallet_id) * 100.0 / (select count(*) from(select distinct dest_wallet_id from data_dataset ) as b0)
+from(
+    select dest_wallet_id, sum_sctv/sum_sctc result
+    from(
+        select dest_wallet_id, sum(sctc) sum_sctc, sum(sctv) sum_sctv
+        from(
+            select dest_wallet_id, sum_count*transaction_cost sctc, sum_count*transaction_value sctv
+            from (
+                select dest_wallet_id, sum(count) sum_count, transaction_cost, transaction_value
+                from data_dataset 
+                group by dest_wallet_id, transaction_cost, transaction_value) as b1
+            where sum_count != 0
+
+            union all
+
+            select dest_wallet_id,transaction_cost sctc, transaction_value sctv
+            from (
+                select dest_wallet_id, sum(count) sum_count, transaction_cost, transaction_value
+                from data_dataset 
+                group by dest_wallet_id, transaction_cost, transaction_value) as b1
+            where sum_count = 0) as b2
+        group by dest_wallet_id) as b3
+    -- where sum_sctc =0) as b4 --29357 (8.88)
+    where sum_sctc != 0) as b4
+-- where result < 0.01 --115782 (35.02)
+-- where result between 0.01 and 1  --86182 (26.07)
+where result > 1 --99264 (30.03)
+روش دوم: به سه دسته می‌توان تقسیم کرد: (براساس نسبت مجموع tranasaction_value / transaction_cost
+1. اول dest_wallet_id هایی که مجموع transaction_value آنها برابر با صفر است. 34.59 %
+2. دوم dest_wallet_id که نسبت گفته شده در آنها کمتر از 1 است. 38.91 %
+3. سوم dest_wallet_id که نسبت گفته شده در آنها بیشتر از 1 است. 24.62 %
+select count(dest_wallet_id) * 100.0 / (select count(*) from(select distinct dest_wallet_id from data_dataset ) as b0)
+from(
+    select dest_wallet_id, sum_sctc/sum_sctv result
+    from(
+        select dest_wallet_id, sum(sctc) sum_sctc, sum(sctv) sum_sctv
+        from(
+            select dest_wallet_id, sum_count*transaction_cost sctc, sum_count*transaction_value sctv
+            from (
+                select dest_wallet_id, sum(count) sum_count, transaction_cost, transaction_value
+                from data_dataset 
+                group by dest_wallet_id, transaction_cost, transaction_value) as b1
+            where sum_count != 0
+
+            union all
+
+            select dest_wallet_id,transaction_cost sctc, transaction_value sctv
+            from (
+                select dest_wallet_id, sum(count) sum_count, transaction_cost, transaction_value
+                from data_dataset 
+                group by dest_wallet_id, transaction_cost, transaction_value) as b1
+            where sum_count = 0) as b2
+        group by dest_wallet_id) as b3
+    -- where sum_sctv =0) as b4 --(34.59 %)
+    where sum_sctv != 0) as b4
+-- where result < 1 -- (38.91 %)
+-- where result > 1 -- (24.62 %)
+
+
+
+
+
+
+
+
+الان این خوبه
+select count(*) * 100.0 / (select count(*) from(select distinct dest_wallet_id from data_dataset ) as b0)
+from(
+    select dest_wallet_id, swtc, swtv, swtv/swtc result
+    from(
+        select dest_wallet_id, sum(wtv) swtv, sum(wtc) swtc
+        from(
+            select dest_wallet_id, wight*transaction_value wtv, wight*transaction_cost wtc--, wight
+            from(
+                select dest_wallet_id, sum(new_count) wight, transaction_cost, transaction_value
+                from(
+                    select *
+                    from(
+                        select dest_wallet_id, count(count) new_count, transaction_cost, transaction_value
+                        from data_dataset 
+                        where count = 0
+                        group by dest_wallet_id, transaction_cost, transaction_value) as b0
+
+                    union all
+                    select *
+                    from(
+                        select dest_wallet_id, count new_count, transaction_cost, transaction_value
+                        from data_dataset
+                        where count != 0) as b1) as b2
+                group by dest_wallet_id, transaction_cost, transaction_value) as b3) as b4
+        group by dest_wallet_id) as b5
+    where swtc = 0 ) as b6 --(8.88 %)
+    --where swtc != 0 ) as b6
+-- where result = 0 --(34.59 %)
+--where result > 0 and result <= 1 --(26.51 %)
+--where result > 1 --(30.03 %)
+
+
+
+
+اینم دومین خوب
+
+
+select count(*) * 100.0 / (select count(*) from(select distinct dest_wallet_id from data_dataset ) as b0)
+from(
+    select dest_wallet_id, swtc, swtv, swtc/swtv result
+    from(
+        select dest_wallet_id, sum(wtv) swtv, sum(wtc) swtc
+        from(
+            select dest_wallet_id, wight*transaction_value wtv, wight*transaction_cost wtc--, wight
+            from(
+                select dest_wallet_id, sum(new_count) wight, transaction_cost, transaction_value
+                from(
+                    select *
+                    from(
+                        select dest_wallet_id, count(count) new_count, transaction_cost, transaction_value
+                        from data_dataset 
+                        where count = 0
+                        group by dest_wallet_id, transaction_cost, transaction_value) as b0
+
+                    union all
+                    select *
+                    from(
+                        select dest_wallet_id, count new_count, transaction_cost, transaction_value
+                        from data_dataset
+                        where count != 0) as b1) as b2
+                group by dest_wallet_id, transaction_cost, transaction_value) as b3) as b4
+        group by dest_wallet_id) as b5
+    where swtv != 0 ) as b6 
+    --where swtv = 0 ) as b6--(34.59 %)
+--where result >= 1 --(26.51 %)
+where result < 1 --(38.91 %)
+
+برای کلاسترینگ bank_id براساس count, 
+
+
+
+
+
+
+
+
+        select dest_wallet_id, swtc/wight swtc_devide_wight, swtv/wight swtv_devide_wight, swtc/greatest(swtv,1) swtc_devide_swtv, swtv/greatest(swtc,1) swtv_devide_swtc, swtc+swtv swtc_plus_swtv
+        from(
+            select dest_wallet_id, wight, sum(transaction_value) swtv, sum(transaction_cost) swtc
+            from(
+                select dest_wallet_id, sum(new_count) wight, transaction_cost, transaction_value
+                from(
+                    select *
+                    from(
+                        select dest_wallet_id, count(count) new_count, transaction_cost, transaction_value
+                        from data_dataset 
+                        where count = 0
+                        group by dest_wallet_id, transaction_cost, transaction_value) as b0
+
+                    union all
+                    select *
+                    from(
+                        select dest_wallet_id, count new_count, transaction_cost, transaction_value
+                        from data_dataset
+                        where count != 0) as b1) as b2
+                group by dest_wallet_id, transaction_cost, transaction_value) as b3
+            group by dest_wallet_id, wight) as b4
+            
+            
+            
+            
+آن دسته از transaction_type_chain ها که بالای 10000 ‌بار تکرار شدند:
+--     select transaction_type_chain, count_chain
+--     from(
+--         select  transaction_type_chain, count(*) count_chain from data_dataset
+--         group by transaction_type_chain) as b0
+--     where count_chain > 10000
